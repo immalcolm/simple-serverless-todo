@@ -1,32 +1,35 @@
 // api/todos/index.js
-
-// Shared data simulation (Note: State resets in serverless!)
-// In a real app, this array should be replaced by a database call.
-export let todos = [
-  { id: 1, task: "Learn Vercel Functions", status: "In Progress" },
-  { id: 2, task: "Build Frontend", status: "Done" }
-];
+import { todos } from './_data.js';
 
 export default function handler(req, res) {
   const { method, body } = req;
 
   switch (method) {
     case 'GET':
-      // Return the full list
-      return res.status(200).json(todos);
+      // READ ALL: Return the full list
+      res.status(200).json(todos);
+      break;
 
     case 'POST':
-      // Create a new item
+      // CREATE: Add a new item
+      const { task } = body;
+      
+      if (!task) {
+        return res.status(400).json({ error: "Task is required" });
+      }
+
       const newTodo = {
-        id: Date.now(), // Generate a simple unique ID
-        task: body.task || "New Task",
+        id: Date.now(), // Generate a unique ID based on timestamp
+        task: task,
         status: "Pending"
       };
+
       todos.push(newTodo);
-      return res.status(201).json(newTodo);
+      res.status(201).json(newTodo);
+      break;
 
     default:
       res.setHeader('Allow', ['GET', 'POST']);
-      return res.status(405).end(`Method ${method} Not Allowed`);
+      res.status(405).end(`Method ${method} Not Allowed`);
   }
 }
